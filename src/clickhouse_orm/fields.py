@@ -43,7 +43,7 @@ class Field(FunctionOperatorsMixin):
         default: Any = None,
         alias: Optional[Union[F, str]] = None,
         materialized: Optional[Union[F, str]] = None,
-        readonly: bool = None,
+        readonly: Optional[bool] = None,
         codec: Optional[str] = None,
         db_column: Optional[str] = None,
     ):
@@ -118,7 +118,7 @@ class Field(FunctionOperatorsMixin):
                 % (self.__class__.__name__, value, min_value, max_value)
             )
 
-    def to_db_string(self, value, quote=True):
+    def to_db_string(self, value, quote=True)->Any:
         """
         Returns the field's value prepared for writing to the database.
         When quote is true, strings are surrounded by single quotes.
@@ -959,6 +959,31 @@ class JSONField(Field):
 
     class_default = {}
     db_type = "JSON"
+
+
+from clickhouse_orm import Field
+
+
+class BooleanField(Field):
+
+    # The ClickHouse column type to use
+    db_type = "Bool"
+
+    # The default value
+    class_default = False
+
+    def to_python(self, value):
+        # Convert valid values to bool
+        if value in (1, "1", True):
+            return True
+        elif value in (0, "0", False):
+            return False
+        else:
+            raise ValueError("Invalid value for BooleanField: %r" % value)
+
+    def to_db_string(self, value, quote=True):
+        # The value was already converted by to_python, so it's a bool
+        return True if value else False
 
 
 # Expose only relevant classes in import *
