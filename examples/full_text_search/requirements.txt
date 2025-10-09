@@ -1,0 +1,4 @@
+ch-orm
+nltk
+requests
+colorama

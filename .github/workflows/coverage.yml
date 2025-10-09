@@ -1,0 +1,53 @@
+name: Coverage check
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  # Run tests.
+  # See also https://docs.docker.com/docker-hub/builds/automated-testing/
+  test:
+    runs-on: ubuntu-latest
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:22.6-alpine
+        ports:
+          - 8123:8123
+          - 9000:9000
+        options: --ulimit nofile=262144:262144
+    strategy:
+      matrix:
+        python-version: [ "3.9" ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and Install
+        run: |
+          pip install build
+          python -m build 
+          pip install dist/*
+          pip install coveralls
+      - name: UnitTest
+        run: |
+          coverage run --source=clickhouse_orm -m unittest
+      - name: Upload Coverage
+        run: coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+          COVERALLS_PARALLEL: true
+
+  coveralls:
+    name: Finish Coveralls
+    needs: test
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+      - name: Finished
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
