@@ -961,9 +961,6 @@ class JSONField(Field):
     db_type = "JSON"
 
 
-from clickhouse_orm import Field
-
-
 class BooleanField(Field):
 
     # The ClickHouse column type to use
