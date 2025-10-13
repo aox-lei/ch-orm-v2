@@ -14,11 +14,8 @@ from typing import (
     Iterator,
 )
 
-import pytz
-
 from .utils import comma_join, string_or_func, arg_to_sql
 
-# pylint: disable=R0903, W0212, C0415
 
 if TYPE_CHECKING:
     from clickhouse_orm.models import Model
