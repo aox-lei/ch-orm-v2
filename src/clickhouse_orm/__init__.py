@@ -1,4 +1,5 @@
 from clickhouse_orm.database import Page, DatabaseException, ServerError, Database
+from clickhouse_orm.session import in_session
 from clickhouse_orm.engines import (
     TinyLog,
     Log,
@@ -57,4 +58,4 @@ from clickhouse_orm.models import (
 from clickhouse_orm.query import Q
 from clickhouse_orm.system_models import SystemPart
 
-__version__ = "0.3.6"
+__version__ = "0.3.7"
