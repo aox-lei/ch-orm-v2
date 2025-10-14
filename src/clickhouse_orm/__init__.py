@@ -57,4 +57,4 @@ from clickhouse_orm.models import (
 from clickhouse_orm.query import Q
 from clickhouse_orm.system_models import SystemPart
 
-__version__ = "0.3.5"
+__version__ = "0.3.6"

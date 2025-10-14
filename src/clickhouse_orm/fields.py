@@ -118,7 +118,7 @@ class Field(FunctionOperatorsMixin):
                 % (self.__class__.__name__, value, min_value, max_value)
             )
 
-    def to_db_string(self, value, quote=True)->Any:
+    def to_db_string(self, value, quote=True) -> Any:
         """
         Returns the field's value prepared for writing to the database.
         When quote is true, strings are surrounded by single quotes.
@@ -291,8 +291,13 @@ class DateTimeField(Field):
                 dt = iso8601.parse_date(value, default_timezone=None)
             except iso8601.ParseError as e:
                 raise ValueError(str(e))
-
             return dt
+        if callable(value):
+            result = value()
+            if isinstance(result, datetime.datetime):
+                return result if result.tzinfo else result.replace(tzinfo=pytz.utc)
+            else:
+                raise ValueError("Callable must return a datetime object, got %s" % type(result))
         raise ValueError("Invalid value for %s - %r" % (self.__class__.__name__, value))
 
     def to_db_string(self, value, quote=True) -> str:
@@ -960,6 +965,12 @@ class JSONField(Field):
     class_default = {}
     db_type = "JSON"
 
+    def to_python(self, value):
+        return value
+
+    def to_db_string(self, value, quote=True):
+        return escape(json.dumps(value), quote=quote)
+
 
 class BooleanField(Field):
 
@@ -980,7 +991,7 @@ class BooleanField(Field):
 
     def to_db_string(self, value, quote=True):
         # The value was already converted by to_python, so it's a bool
-        return True if value else False
+        return "1" if value else "0"
 
 
 # Expose only relevant classes in import *
