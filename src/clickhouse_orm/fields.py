@@ -77,12 +77,19 @@ class Field(FunctionOperatorsMixin):
         self.readonly = bool(self.alias or self.materialized or readonly)
         self.codec = codec
         self.db_column = db_column
+        self._without_table_name = False
 
     def __str__(self):
+        if self._without_table_name is True:
+            return self.name
         return f"{self.parent.table_name()}.{self.name}"
 
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
+    
+    def without_table_name(self):
+        self._without_table_name = True
+        return self
 
     def column_as(self, alias: str):
         self.alias_name = alias

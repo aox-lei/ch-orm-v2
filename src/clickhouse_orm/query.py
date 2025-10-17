@@ -685,6 +685,13 @@ class QuerySet(Generic[MODEL]):
         queryset._final = True
         return queryset
 
+    def delete_lightweight(self) -> "QuerySet[MODEL]":
+        self._verify_mutation_allowed()
+        conditions = (self._where_q & self._prewhere_q).to_sql(self._model_cls)
+        sql = "DELETE FROM $db.`%s`  WHERE %s" % (self._model_cls.table_name(), conditions)
+        self._database.raw(sql)
+        return self
+
     def delete(self) -> "QuerySet[MODEL]":
         """
         Deletes all records matched by this queryset's conditions.
