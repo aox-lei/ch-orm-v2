@@ -438,6 +438,9 @@ class Model(metaclass=ModelBase):
         - `database`: if given, sets the database that this instance belongs to.
         """
         values = iter(parse_tsv(line))
+        
+        if result_model_class == list:
+            return next(values)
 
         if result_model_class is None:
             result_model_class = cls

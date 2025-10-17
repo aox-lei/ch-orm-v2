@@ -459,6 +459,10 @@ class QuerySet(Generic[MODEL]):
     def right_join(self, other: type[Model], on: Q):
         self._joins.append(("RIGHT JOIN", other.table_name(), on))
         return self
+    
+    def full_join(self,other: type[Model], on: Q):
+        self._joins.append(("FULL JOIN", other.table_name(), on))
+        return self
 
     def group_by(self, *fields_or_expr):
         for field in fields_or_expr:
@@ -573,6 +577,11 @@ class QuerySet(Generic[MODEL]):
     def into_model(self, model_class: type):
         queryset = self._clone()
         queryset._result_model_class = model_class
+        return queryset
+    
+    def into_list(self):
+        queryset = self._clone()
+        queryset._result_model_class = list
         return queryset
 
     def only(self, *field_names) -> "QuerySet[MODEL]":
