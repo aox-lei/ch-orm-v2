@@ -235,6 +235,7 @@ class Q:
     OR_MODE = "OR"
 
     def __init__(self, *filter_funcs, **filter_fields):
+        print(filter_funcs)
         self._conds = list(filter_funcs) + [
             self._build_cond(k, v) for k, v in filter_fields.items()
         ]

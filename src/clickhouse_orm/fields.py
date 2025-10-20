@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, annotations
 
+import copy
 import json
 import re
 import datetime
@@ -80,8 +81,7 @@ class Field(FunctionOperatorsMixin):
         self._without_table_name = False
 
     def __str__(self):
-        if self._without_table_name is True:
-            self._without_table_name = False
+        if self._without_table_name:
             return self.name
         return f"{self.parent.table_name()}.{self.name}"
 
@@ -89,8 +89,9 @@ class Field(FunctionOperatorsMixin):
         return "<%s>" % self.__class__.__name__
 
     def without_table_name(self):
-        self._without_table_name = True
-        return self
+        new_field = copy.copy(self)
+        new_field._without_table_name = True
+        return new_field
 
     def column_as(self, alias: str):
         self.alias_name = alias
