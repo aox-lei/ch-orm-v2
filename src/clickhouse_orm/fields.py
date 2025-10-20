@@ -81,12 +81,13 @@ class Field(FunctionOperatorsMixin):
 
     def __str__(self):
         if self._without_table_name is True:
+            self._without_table_name = False
             return self.name
         return f"{self.parent.table_name()}.{self.name}"
 
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
-    
+
     def without_table_name(self):
         self._without_table_name = True
         return self
