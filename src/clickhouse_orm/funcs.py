@@ -419,7 +419,7 @@ class F(Cond, FunctionOperatorsMixin, metaclass=FMeta):  # pylint: disable=R0904
     @staticmethod
     @binary_operator
     def _in(a, b):
-        if is_iterable(b) and not isinstance(b, (tuple, QuerySet)):
+        if is_iterable(b) and not isinstance(b, (tuple, QuerySet, str)):
             b = tuple(b)
         return F("IN", a, b)
 
