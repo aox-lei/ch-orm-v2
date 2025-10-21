@@ -45,7 +45,7 @@ from clickhouse_orm.fields import (
     JSONField,
     BooleanField,
 )
-from clickhouse_orm.funcs import F, Lambda
+from clickhouse_orm.funcs import F, Lambda, SubQuery
 from clickhouse_orm.migrations import *
 from clickhouse_orm.models import (
     Model,
@@ -58,4 +58,4 @@ from clickhouse_orm.models import (
 from clickhouse_orm.query import Q, QuerySet
 from clickhouse_orm.system_models import SystemPart
 
-__version__ = "0.4.5"
+__version__ = "0.4.6"
