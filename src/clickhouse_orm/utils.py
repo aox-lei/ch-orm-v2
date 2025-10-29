@@ -52,11 +52,12 @@ def arg_to_sql(arg):
     Supports functions, model fields, strings, dates, datetimes, timedeltas, booleans,
     None, numbers, timezones, arrays/iterables.
     """
-    from clickhouse_orm import Field, StringField, DateTimeField, DateField, F, QuerySet, SubQuery
-
+    from clickhouse_orm import Field, StringField, DateTimeField, DateField, F, QuerySet, SubQuery,Column
     if isinstance(arg, F):
         return arg.to_sql()
     if isinstance(arg, Field):
+        return "%s" % arg
+    if isinstance(arg, Column):
         return "%s" % arg
     if isinstance(arg, SubQuery):
         return "(%s)" % arg

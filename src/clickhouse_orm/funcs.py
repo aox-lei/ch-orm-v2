@@ -257,12 +257,22 @@ class FMeta(type):
         # Attach to class
         setattr(cls, new_name, new_func)
 
+
 class SubQuery:
-    def __init__(self, sql:str):
+    def __init__(self, sql: str):
         self.sql = sql
-        
+
     def __str__(self):
         return self.sql
+
+
+class Column:
+    def __init__(self, name: str):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
 
 class F(Cond, FunctionOperatorsMixin, metaclass=FMeta):  # pylint: disable=R0904
     """
@@ -310,7 +320,7 @@ class F(Cond, FunctionOperatorsMixin, metaclass=FMeta):  # pylint: disable=R0904
         else:
             prefix = self.name
             sep = ", "
-        
+
         arg_strs = (arg_to_sql(arg) for arg in self.args if arg != NO_VALUE)
         if self.alias_name:
             return f"{prefix}({sep.join(arg_strs)}) AS {self.alias_name} {self.order_by}"

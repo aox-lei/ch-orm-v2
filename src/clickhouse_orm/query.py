@@ -275,8 +275,9 @@ class Q:
 
     def to_sql(self, model_cls: type[Model]) -> str:
         condition_sql = []
-
+        
         if self._conds:
+            
             condition_sql.extend([cond.to_sql(model_cls) for cond in self._conds])
 
         if self._children:
@@ -352,6 +353,8 @@ class QuerySet(Generic[MODEL]):
         self._distinct = False
         self._final = False
         self._joins = []
+        self._alias_name = ""
+        self._from_sql = ""
 
     def _clone(self) -> "QuerySet[MODEL]":
         queryset = type(self)(self._model_cls, self._database)
@@ -367,6 +370,8 @@ class QuerySet(Generic[MODEL]):
         queryset._distinct = self._distinct
         queryset._final = self._final
         queryset._joins = self._joins
+        queryset._alias_name = self._alias_name
+        queryset._from_sql = self._from_sql
         queryset._result_model_class = self._result_model_class
         return queryset
 
@@ -459,9 +464,17 @@ class QuerySet(Generic[MODEL]):
     def right_join(self, other: type[Model], on: Q):
         self._joins.append(("RIGHT JOIN", other.table_name(), on))
         return self
-    
-    def full_join(self,other: type[Model], on: Q):
+
+    def full_join(self, other: type[Model], on: Q):
         self._joins.append(("FULL JOIN", other.table_name(), on))
+        return self
+
+    def alias(self, alias: str):
+        self._alias_name = alias
+        return self
+
+    def from_(self, from_sql: str):
+        self._from_sql = from_sql
         return self
 
     def group_by(self, *fields_or_expr):
@@ -478,6 +491,9 @@ class QuerySet(Generic[MODEL]):
         table_name = "`%s`" % self._model_cls.table_name()
         if self._model_cls.is_system_model():
             table_name = "`system`." + table_name
+        if self._from_sql:
+            table_name = self._from_sql
+            
         _join = []
         if self._joins:
             for _join_type, _table_name, _on in self._joins:
@@ -485,7 +501,6 @@ class QuerySet(Generic[MODEL]):
         join_str = " ".join(_join)
 
         params = (distinct, self.select_fields_as_sql(), table_name, join_str, final)
-
         sql = "SELECT %s%s\nFROM %s %s %s" % params
 
         if self._prewhere_q and not self._prewhere_q.is_empty:
@@ -509,7 +524,8 @@ class QuerySet(Generic[MODEL]):
 
         if self._limits:
             sql += "\nLIMIT %d, %d" % self._limits
-
+        if self._alias_name:
+            return f"({sql}) as {self._alias_name}"
         return sql
 
     def order_by_as_sql(self) -> str:
@@ -578,7 +594,7 @@ class QuerySet(Generic[MODEL]):
         queryset = self._clone()
         queryset._result_model_class = model_class
         return queryset
-    
+
     def into_list(self):
         queryset = self._clone()
         queryset._result_model_class = list
@@ -723,6 +739,19 @@ class QuerySet(Generic[MODEL]):
         fields = comma_join("`%s` = %s" % (name, arg_to_sql(expr)) for name, expr in kwargs.items())
         conditions = (self._where_q & self._prewhere_q).to_sql(self._model_cls)
         sql = "ALTER TABLE $db.`%s` UPDATE %s WHERE %s" % (
+            self._model_cls.table_name(),
+            fields,
+            conditions,
+        )
+        self._database.raw(sql)
+        return self
+
+    def update_lightweight(self, **kwargs):
+        assert kwargs, "No fields specified for update"
+        self._verify_mutation_allowed()
+        fields = comma_join("`%s` = %s" % (name, arg_to_sql(expr)) for name, expr in kwargs.items())
+        conditions = (self._where_q & self._prewhere_q).to_sql(self._model_cls)
+        sql = " UPDATE `%s` SET %s WHERE %s" % (
             self._model_cls.table_name(),
             fields,
             conditions,
