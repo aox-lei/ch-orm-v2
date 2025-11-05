@@ -275,9 +275,9 @@ class Q:
 
     def to_sql(self, model_cls: type[Model]) -> str:
         condition_sql = []
-        
+
         if self._conds:
-            
+
             condition_sql.extend([cond.to_sql(model_cls) for cond in self._conds])
 
         if self._children:
@@ -453,20 +453,36 @@ class QuerySet(Generic[MODEL]):
             fields = comma_join("%s" % field for field in self._fields)
         return fields
 
-    def inner_join(self, other: type[Model], on: Q):
-        self._joins.append(("INNER JOIN", other.table_name(), on))
+    def inner_join(self, other: Union[type[Model], str], on: Q):
+        if isinstance(other, str):
+            table_name = other
+        else:
+            table_name = other.table_name()
+        self._joins.append(("INNER JOIN", table_name, on))
         return self
 
-    def left_join(self, other: type[Model], on: Q):
-        self._joins.append(("LEFT JOIN", other.table_name(), on))
+    def left_join(self, other: Union[type[Model], str], on: Q):
+        if isinstance(other, str):
+            table_name = other
+        else:
+            table_name = other.table_name()
+        self._joins.append(("LEFT JOIN", table_name, on))
         return self
 
-    def right_join(self, other: type[Model], on: Q):
-        self._joins.append(("RIGHT JOIN", other.table_name(), on))
+    def right_join(self, other: Union[type[Model], str], on: Q):
+        if isinstance(other, str):
+            table_name = other
+        else:
+            table_name = other.table_name()
+        self._joins.append(("RIGHT JOIN", table_name, on))
         return self
 
-    def full_join(self, other: type[Model], on: Q):
-        self._joins.append(("FULL JOIN", other.table_name(), on))
+    def full_join(self, other: Union[type[Model], str], on: Q):
+        if isinstance(other, str):
+            table_name = other
+        else:
+            table_name = other.table_name()
+        self._joins.append(("FULL JOIN", table_name, on))
         return self
 
     def alias(self, alias: str):
@@ -493,7 +509,7 @@ class QuerySet(Generic[MODEL]):
             table_name = "`system`." + table_name
         if self._from_sql:
             table_name = self._from_sql
-            
+
         _join = []
         if self._joins:
             for _join_type, _table_name, _on in self._joins:
