@@ -991,9 +991,9 @@ class BooleanField(Field):
 
     def to_python(self, value):
         # Convert valid values to bool
-        if value in (1, "1", True):
+        if value in (1, "1", True, "true"):
             return True
-        elif value in (0, "0", False):
+        elif value in (0, "0", False, "false"):
             return False
         else:
             raise ValueError("Invalid value for BooleanField: %r" % value)
