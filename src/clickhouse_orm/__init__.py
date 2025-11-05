@@ -58,4 +58,4 @@ from clickhouse_orm.models import (
 from clickhouse_orm.query import Q, QuerySet
 from clickhouse_orm.system_models import SystemPart
 
-__version__ = "0.4.7"
+__version__ = "0.4.8"

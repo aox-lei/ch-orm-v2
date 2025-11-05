@@ -2109,6 +2109,10 @@ class F(Cond, FunctionOperatorsMixin, metaclass=FMeta):  # pylint: disable=R0904
     @staticmethod
     def ifNull(x, y):
         return F("ifNull", x, y)
+    
+    @staticmethod
+    def if_(x, y, z):
+        return F("if", x, y, z)
 
     @staticmethod
     def nullIf(x, y):
