@@ -573,6 +573,9 @@ class QuerySet(Generic[MODEL]):
             return int(raw) if raw else 0
 
         table_name = "`%s`" % self._model_cls.table_name()
+        if self._from_sql:
+            table_name = self._from_sql
+
         if self._model_cls.is_system_model():
             table_name = "`system`." + table_name
         _join = []
