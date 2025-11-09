@@ -1,10 +1,8 @@
-from operator import itemgetter
-from clickhouse_orm import Model, StringField, Q, Database, F
-import dataclasses
+from clickhouse_orm import Model, StringField, Q, Database, F, Field, Column, ArrayField, Int64Field
 import pydantic
 
 db = Database(
-    "111", db_url="http://1.1.1.1:8123", username="111", password="123"
+    "kumiao", db_url="http://60.205.139.141:8123", username="kumiao", password="123Abc@@@"
 )
 
 
@@ -19,6 +17,7 @@ class SellerInfo(Model):
     seller_id = StringField()
     country_code = StringField()
     seller_name = StringField()
+    price = Int64Field()
 
     @classmethod
     def table_name(cls):
@@ -26,9 +25,11 @@ class SellerInfo(Model):
 
 
 class Toplist(Model):
+    seller_id = StringField()
     asin = StringField()
     country_code = StringField()
     top_node = StringField()
+    child_asins = ArrayField(StringField())
 
 
 class ProductData(pydantic.BaseModel):
@@ -36,22 +37,14 @@ class ProductData(pydantic.BaseModel):
 
 
 def test():
-    sql = (
-        Product.objects_in(db)
-        .only(Product.seller_id.column_as("seller_id"))
-        .filter(Q(Product.asin == "B09Q9V6G5K") & Q(Product.country_code == "US"))
-        .inner_join(
-            SellerInfo,
-            on=(
-                Q(Product.seller_id == SellerInfo.seller_id)
-                & Q(Product.country_code == SellerInfo.country_code)
-            ),
-        )
-        .inner_join(
-            Toplist,
-            on=(Q(Product.asin == Toplist.asin) & Q(Product.country_code == Toplist.country_code)),
-        )
-        .group_by(Product.asin, Product.country_code)
-        .as_sql()
+    table_model = (
+        SellerInfo.objects_in(db)
+        .filter(Q(SellerInfo.seller_id == "seller_id"))
+        .only(SellerInfo.seller_name)
+        .alias("seller_info")
     )
+
+    sql = Toplist.objects_in(db).left_join(
+        table_model.as_sql(), on=(Q(SellerInfo.seller_id == Toplist.seller_id))
+    ).count
     print(sql)

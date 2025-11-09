@@ -12,10 +12,10 @@ from collections import namedtuple
 from decimal import Decimal, localcontext
 from ipaddress import IPv4Address, IPv6Address
 from typing import TYPE_CHECKING, Any, Optional, Union, Iterable
-
 import iso8601
 import pytz
 from pytz import BaseTzInfo
+import json_repair as json
 
 from .utils import escape, parse_array, comma_join, string_or_func, get_subclass_names, parse_map
 from .funcs import F, FunctionOperatorsMixin, Lambda
@@ -655,10 +655,8 @@ class ArrayField(Field):
         super(ArrayField, self).__init__(default, alias, materialized, readonly, codec, db_column)
 
     def to_python(self, value):
-        if isinstance(value, str):
-            value = parse_array(value)
-        elif isinstance(value, bytes):
-            value = parse_array(value.decode("UTF-8"))
+        if isinstance(value, (str, bytes)):
+            value = json.loads(value)
         elif not isinstance(value, (list, tuple)):
             raise ValueError("ArrayField expects list or tuple, not %s" % type(value))
         return [self.inner_field.to_python(v) for v in value]
