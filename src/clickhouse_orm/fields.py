@@ -14,8 +14,8 @@ from ipaddress import IPv4Address, IPv6Address
 from typing import TYPE_CHECKING, Any, Optional, Union, Iterable
 import iso8601
 import pytz
+import json_repair
 from pytz import BaseTzInfo
-import json_repair as json
 
 from .utils import escape, parse_array, comma_join, string_or_func, get_subclass_names, parse_map
 from .funcs import F, FunctionOperatorsMixin, Lambda
@@ -656,7 +656,7 @@ class ArrayField(Field):
 
     def to_python(self, value):
         if isinstance(value, (str, bytes)):
-            value = json.loads(value)
+            value = json_repair.loads(value)
         elif not isinstance(value, (list, tuple)):
             raise ValueError("ArrayField expects list or tuple, not %s" % type(value))
         return [self.inner_field.to_python(v) for v in value]
