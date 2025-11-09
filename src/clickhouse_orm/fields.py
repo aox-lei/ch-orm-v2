@@ -193,6 +193,8 @@ class StringField(Field):
     db_type = "String"
 
     def to_python(self, value) -> str:
+        if isinstance(value, list):
+            return value[0]
         if isinstance(value, str):
             return value
         if isinstance(value, bytes):
