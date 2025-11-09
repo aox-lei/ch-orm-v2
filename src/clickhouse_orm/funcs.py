@@ -266,7 +266,7 @@ class SubQuery:
         return self.sql
 
 
-class Column:
+class Column(FunctionOperatorsMixin):
     def __init__(self, name: str):
         self.name = name
 

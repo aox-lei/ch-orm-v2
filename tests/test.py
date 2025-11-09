@@ -1,6 +1,8 @@
 from clickhouse_orm import Model, StringField, Q, Database, F, Field, Column, ArrayField, Int64Field
 import pydantic
 
+from clickhouse_orm.funcs import SubQuery
+
 db = Database(
     "kumiao", db_url="http://60.205.139.141:8123", username="kumiao", password="123Abc@@@"
 )
@@ -37,14 +39,6 @@ class ProductData(pydantic.BaseModel):
 
 
 def test():
-    table_model = (
-        SellerInfo.objects_in(db)
-        .filter(Q(SellerInfo.seller_id == "seller_id"))
-        .only(SellerInfo.seller_name)
-        .alias("seller_info")
-    )
-
-    sql = Toplist.objects_in(db).left_join(
-        table_model.as_sql(), on=(Q(SellerInfo.seller_id == Toplist.seller_id))
-    ).count
+    sql = Toplist.objects_in(db).filter(Q(Column("(seller_id, asin)").isIn([(1, 2), (3, 4)]))).as_sql()
     print(sql)
+    
